@@ -11,7 +11,7 @@ remove_existing_ai_software() {
     pip uninstall -y tensorflow torch torchvision torchaudio transformers datasets scikit-learn pandas numpy matplotlib gym jupyterlab jupyter_contrib_nbextensions
 
     # Remove existing Python environments
-    rm -rf ~/ai_env
+    rm -rf ~/"$1"
 
     # Clean up Homebrew
     brew cleanup
@@ -34,10 +34,12 @@ install_ai_software() {
     echo "Installing essential tools and libraries..."
     brew install cmake git wget python3
 
-    # Set up a virtual environment
-    echo "Setting up a Python virtual environment..."
-    python3 -m venv ~/ai_env
-    source ~/ai_env/bin/activate
+    # Set up a Python virtual environment if requested
+    if [[ "$1" == "y" ]]; then
+        echo "Setting up a Python virtual environment..."
+        python3 -m venv ~/"$2"
+        source ~/"$2"/bin/activate
+    fi
 
     # Upgrade pip and setuptools
     pip install --upgrade pip setuptools wheel
@@ -76,14 +78,22 @@ install_ai_software() {
     echo "Cleaning up Homebrew..."
     brew cleanup
 
-    echo "Installation complete! To activate the virtual environment, use: source ~/ai_env/bin/activate"
+    echo "Installation complete! To activate the virtual environment, use: source ~/${2}/bin/activate"
 }
 
 # Prompt user for action
 read -p "Do you want to remove existing AI software before installation? [y/n]: " user_choice
 if [[ "$user_choice" == "y" ]]; then
-    remove_existing_ai_software
+    remove_existing_ai_software "ai_env"
+fi
+
+# Ask if the user wants to create a virtual environment
+read -p "Do you want to set up a Python virtual environment? [y/n]: " setup_venv
+if [[ "$setup_venv" == "y" ]]; then
+    read -p "Enter the name of the virtual environment: " venv_name
+else
+    venv_name=""
 fi
 
 # Proceed with installation
-install_ai_software
+install_ai_software "$setup_venv" "$venv_name"
